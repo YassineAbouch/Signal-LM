@@ -7,12 +7,14 @@ import platform
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import unquote
 
 import numpy as np
 
 from .analysis import analyze
 from .signal import Signal
 from .audio import capture, devices as audio_devices
+from .audio_file import analyze_file, MAX_FILE_BYTES
 
 STATIC = Path(__file__).with_name("static")
 MAX_BODY = 2 * 1024 * 1024
@@ -148,7 +150,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local_host():
             return
-        if self.path not in {"/api/analyze", "/api/audio/devices", "/api/audio/start", "/api/audio/frame", "/api/audio/stop"}:
+        if self.path not in {"/api/analyze", "/api/audio/devices", "/api/audio/start", "/api/audio/frame", "/api/audio/stop", "/api/audio/file"}:
             self.respond(404, {"error": "Ressource introuvable."})
             return
         # Reject cross-origin requests to this local service.
@@ -158,8 +160,15 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             size = int(self.headers.get("Content-Length", "0"))
-            if not 0 < size <= MAX_BODY:
-                self.respond(413, {"error": "Requête limitée à 2 Mio."})
+            limit = MAX_FILE_BYTES if self.path == "/api/audio/file" else MAX_BODY
+            if not 0 < size <= limit:
+                self.respond(413, {"error": f"Requête limitée à {limit // 1024 // 1024} Mio."})
+                return
+            if self.path == "/api/audio/file":
+                self.respond(200, analyze_file(self.rfile.read(size),
+                    unquote(self.headers.get("X-Audio-Name", "audio")),
+                    unquote(self.headers.get("X-Audio-Zone", "zone_01")),
+                    self.headers.get("X-Audio-Start", "0")))
                 return
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict):
