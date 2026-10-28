@@ -69,3 +69,15 @@ métier, aucune donnée réelle, mesure de latence ou précision industrielle.
   par défaut ; suite complète : 30 tests réussis en 5,95 s.
 - Navigateur : ancienne URL, affichage des données CUDA, bouton d'actualisation
   et retour à l'analyse vérifiés. Aucun checkpoint modifié ou entraînement lancé.
+
+### Composition de signaux synthétiques
+
+- Ajout/suppression de 1 à 16 sinusoïdes sur le même canal, avec fréquence,
+  amplitude et phase ; somme sans normalisation et aperçu des composantes.
+- Suite complète : 39 tests réussis. Tests dédiés au RMS du mélange, aux
+  amplitudes FFT de deux fréquences, à la somme temporelle, à l'opposition de
+  phase et aux composantes invalides. La requête historique mono-sinusoïde reste valide.
+- Navigateur : ajout d'une composante, réglage 50 Hz / amplitude 2 et
+  120 Hz / amplitude 1 / phase 90° ; RMS affiché 1,5811 et pic dominant 50 Hz.
+- Aucun entraînement ni donnée réelle ; les sinusoïdes ne simulent pas des
+  défauts mécaniques validés.

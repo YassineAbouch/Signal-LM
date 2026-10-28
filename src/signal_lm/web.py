@@ -19,6 +19,8 @@ MAX_BODY = 2 * 1024 * 1024
 
 def analyze_request(data):
     rate = float(data.get("sample_rate", 4096))
+    components = None
+    component_values = []
     if data.get("source", "demo") == "csv":
         columns = data.get("columns", [])
         if not columns or len(set(columns)) != len(columns):
@@ -37,17 +39,30 @@ def analyze_request(data):
                 raise ValueError("Limite : 100 000 échantillons.")
         signal = Signal(rows, rate, tuple(columns), tuple(data.get("units", [])))
     else:
-        frequency = float(data.get("frequency", 120))
-        amplitude = float(data.get("amplitude", 1))
         if not np.isfinite(rate) or not 4 <= rate <= 100000:
             raise ValueError("La fréquence d’échantillonnage de démo doit être entre 4 et 100 000 Hz.")
-        if not np.isfinite(frequency) or not 0 < frequency < rate / 2:
-            raise ValueError("La fréquence du signal doit être positive et inférieure à fs/2.")
-        if not np.isfinite(amplitude) or not 0 < amplitude <= 1000:
-            raise ValueError("Amplitude attendue : ]0, 1000].")
+        raw_components = data.get("components", [{"frequency": data.get("frequency", 120),
+                                                  "amplitude": data.get("amplitude", 1)}])
+        if not isinstance(raw_components, list) or not 1 <= len(raw_components) <= 16:
+            raise ValueError("Le signal doit contenir entre 1 et 16 composantes.")
+        components = []
         t = np.arange(int(rate)) / rate
-        signal = Signal(amplitude * np.sin(2 * np.pi * frequency * t), rate,
-                        ("synthetic",), ("a.u.",))
+        for index, component in enumerate(raw_components, 1):
+            if not isinstance(component, dict):
+                raise ValueError(f"Composante {index} : objet attendu.")
+            frequency = float(component.get("frequency", 120))
+            amplitude = float(component.get("amplitude", 1))
+            phase = float(component.get("phase_deg", 0))
+            if not np.isfinite(frequency) or not 0 < frequency < rate / 2:
+                raise ValueError(f"Composante {index} : fréquence positive et inférieure à fs/2 requise.")
+            if not np.isfinite(amplitude) or not 0 < amplitude <= 1000:
+                raise ValueError(f"Composante {index} : amplitude attendue dans ]0, 1000].")
+            if not np.isfinite(phase) or not -360 <= phase <= 360:
+                raise ValueError(f"Composante {index} : phase attendue entre -360 et 360 degrés.")
+            components.append({"frequency": frequency, "amplitude": amplitude, "phase_deg": phase})
+            component_values.append(amplitude * np.sin(2 * np.pi * frequency * t + np.deg2rad(phase)))
+        signal = Signal(np.sum(component_values, axis=0), rate,
+                        ("synthetic" if len(components) == 1 else "composite",), ("a.u.",))
     if signal.samples.shape[1] > 8:
         raise ValueError("Limite : 8 canaux.")
     result = analyze(signal, include_spectrum=True)
@@ -57,6 +72,9 @@ def analyze_request(data):
     result["waveform"] = {"time_s": (indices / rate).tolist(),
                           "values": signal.samples[indices].T.tolist(),
                           "display_samples": len(indices)}
+    if components is not None:
+        result["synthetic"] = {"method": "sum_of_sinusoids", "components": components}
+        result["waveform"]["components"] = [values[indices].tolist() for values in component_values]
     return result
 
 

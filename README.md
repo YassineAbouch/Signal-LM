@@ -90,6 +90,15 @@ les mesures physiques, l'export JSON et le diagnostic PyTorch/CUDA.
 La page `/model` présente l'architecture et la configuration du modèle par
 défaut, la taille des poids et l'environnement CPU/CUDA. Le diagnostic peut
 être actualisé ; il inspecte une instance fraîche sans charger de checkpoint.
+
+Dans la source **Synthétique**, utiliser **Ajouter une composante** pour
+superposer jusqu'à 16 sinusoïdes sur le même canal temporel. Chaque composante
+possède sa fréquence (Hz), son amplitude (a.u.) et sa phase (-360 à 360 degrés).
+Cliquer **Analyser le signal** après les réglages. La courbe bleue représente
+la somme ; les composantes en pointillés peuvent être masquées. Le RMS et la
+FFT portent sur la somme complète, sans normalisation de l'amplitude. Toutes
+les fréquences doivent rester strictement inférieures à la moitié de la
+fréquence d'échantillonnage commune. L'export JSON inclut les paramètres du mélange.
 Les valeurs CSV sont traitées en mémoire par le serveur local, sans sauvegarde
 automatique. L'export JSON est un téléchargement volontaire contenant les mesures
 et les valeurs affichées ; il est à conserver hors Git pour des données réelles.

@@ -19,3 +19,11 @@
 .rail .nav .nav-icon{display:inline}
 @media(max-width:1100px){.model-layout{grid-template-columns:1fr}.model-metrics{gap:10px}.architecture-stage{flex-wrap:wrap}.architecture-stage span{text-align:left}}
 @media(max-width:700px){.rail .nav:last-of-type{display:flex}.rail .nav{min-width:44px;min-height:44px;align-items:center}.model-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.model-detail{padding:20px}.model-layout{gap:16px}.model-metrics .metric small{display:block}.detail-list>div{gap:12px}.model-detail .panel-title{flex-wrap:wrap}footer{gap:16px;flex-wrap:wrap}}
+
+.component-row{border:1px solid var(--line);border-radius:8px;padding:10px;margin:12px 0;background:#f8fafd}
+.component-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.component-heading h4{font-size:12px;margin:0;color:var(--ink)}
+.remove-component{border:0;border-radius:5px;min-width:44px;min-height:44px;background:transparent;color:var(--muted);font-size:22px}.remove-component:hover{background:#fbe9e6;color:#a3271b}
+.component-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.component-inputs>div{min-width:0}.component-inputs label{font-size:10px;margin:2px 0 6px;white-space:nowrap}.component-inputs input{padding:8px 4px;font-size:12px;min-width:0;width:100%}
+.add-component{width:100%;font-size:12px;white-space:normal;color:var(--blue)}#component-count{font-size:10px;margin-top:10px}
+.component-toggle{display:flex;align-items:center;gap:9px;margin:12px 0 0;font-weight:400;color:var(--muted);font-size:12px;min-height:44px;cursor:pointer}.component-toggle input{width:18px;height:18px;min-height:18px;accent-color:var(--blue)}
+.chart-foot{gap:16px}.chart-foot>span:first-child{max-width:80%}

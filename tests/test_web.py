@@ -4,6 +4,7 @@ from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 
 import pytest
+import numpy as np
 
 from signal_lm.web import Handler, analyze_request
 
@@ -25,6 +26,37 @@ def test_web_csv_explicit_channels_and_units():
     assert result["measurements"][0]["channel"] == "y"
     assert result["measurements"][0]["unit"] == "g"
     assert result["waveform"]["values"] == [[4, 3, 2, 1]]
+
+
+def test_composite_signal_preserves_sum_rms_and_spectral_amplitudes():
+    components = [{"frequency": 50, "amplitude": 2, "phase_deg": 0},
+                  {"frequency": 120, "amplitude": 1, "phase_deg": 90}]
+    result = analyze_request({"components": components, "sample_rate": 4096})
+    assert result["measurements"][0]["rms"] == pytest.approx(np.sqrt(2.5))
+    assert result["measurements"][0]["dominant_frequency_hz"] == 50
+    spectrum = result["spectrum"]["amplitude_by_channel"][0]
+    assert spectrum[50] == pytest.approx(2)
+    assert spectrum[120] == pytest.approx(1)
+    waveform = result["waveform"]
+    np.testing.assert_allclose(np.sum(waveform["components"], axis=0), waveform["values"][0])
+    assert waveform["components"][1][0] == pytest.approx(1)
+    assert result["synthetic"]["components"] == components
+    assert result["prediction"]["status"] == "unavailable"
+
+
+def test_composite_opposite_phases_cancel_without_normalization():
+    result = analyze_request({"components": [
+        {"frequency": 50, "amplitude": 2, "phase_deg": 90},
+        {"frequency": 50, "amplitude": 2, "phase_deg": -90}]})
+    assert result["measurements"][0]["rms"] == pytest.approx(0, abs=1e-12)
+
+
+@pytest.mark.parametrize("components", [[], [{}] * 17, [None],
+    [{"frequency": 2048}], [{"amplitude": 0}], [{"phase_deg": float("nan")}],
+    [{"phase_deg": 361}]])
+def test_composite_rejects_invalid_components(components):
+    with pytest.raises(ValueError):
+        analyze_request({"components": components})
 
 
 @pytest.mark.parametrize("payload", [
