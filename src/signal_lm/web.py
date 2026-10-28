@@ -1,4 +1,4 @@
-"""Loopback-only web workspace. No training or uploaded-file persistence."""
+"""Loopback workspace: physical analysis, read-only inference and explicit annotations."""
 import argparse
 import csv
 import io
@@ -15,6 +15,7 @@ from .analysis import analyze
 from .signal import Signal
 from .audio import capture, devices as audio_devices
 from .audio_file import analyze_file, MAX_FILE_BYTES
+from . import learning, model_test
 
 STATIC = Path(__file__).with_name("static")
 MAX_BODY = 2 * 1024 * 1024
@@ -132,7 +133,17 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/doctor":
             self.respond(200, doctor())
             return
+        if self.path in {"/api/learning/stats", "/api/model-test/info"}:
+            try:
+                self.respond(200, learning.stats() if self.path.endswith("stats") else model_test.info())
+            except (ValueError, RuntimeError, OSError) as exc:
+                self.respond(503, {"error": str(exc)})
+            return
         files = {"/": ("index.html", "text/html; charset=utf-8"),
+                 "/learn": ("learn.html", "text/html; charset=utf-8"),
+                 "/learn.js": ("learn.js", "text/javascript; charset=utf-8"),
+                 "/test-model": ("test-model.html", "text/html; charset=utf-8"),
+                 "/test-model.js": ("test-model.js", "text/javascript; charset=utf-8"),
                  "/audio": ("audio.html", "text/html; charset=utf-8"),
                  "/audio.js": ("audio.js", "text/javascript; charset=utf-8"),
                  "/charts.js": ("charts.js", "text/javascript; charset=utf-8"),
@@ -150,7 +161,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local_host():
             return
-        if self.path not in {"/api/analyze", "/api/audio/devices", "/api/audio/start", "/api/audio/frame", "/api/audio/stop", "/api/audio/file"}:
+        binary_paths = {"/api/audio/file", "/api/learning/save", "/api/model-test/file"}
+        if self.path not in {"/api/analyze", "/api/audio/devices", "/api/audio/start", "/api/audio/frame", "/api/audio/stop", "/api/model-test/example"} | binary_paths:
             self.respond(404, {"error": "Ressource introuvable."})
             return
         # Reject cross-origin requests to this local service.
@@ -160,9 +172,27 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             size = int(self.headers.get("Content-Length", "0"))
-            limit = MAX_FILE_BYTES if self.path == "/api/audio/file" else MAX_BODY
+            limit = MAX_FILE_BYTES if self.path in binary_paths else MAX_BODY
             if not 0 < size <= limit:
                 self.respond(413, {"error": f"Requête limitée à {limit // 1024 // 1024} Mio."})
+                return
+            if self.path == "/api/learning/save":
+                self.respond(200, learning.save_annotation(self.rfile.read(size),
+                    unquote(self.headers.get("X-Audio-Name", "audio")),
+                    zone=unquote(self.headers.get("X-Audio-Zone", "zone_01")),
+                    window_start=self.headers.get("X-Audio-Start", "0"),
+                    selection_start=self.headers.get("X-Selection-Start", "0"),
+                    selection_end=self.headers.get("X-Selection-End", "1"),
+                    label=unquote(self.headers.get("X-Learning-Label", "")),
+                    meaning=unquote(self.headers.get("X-Learning-Meaning", "")),
+                    machine_id=unquote(self.headers.get("X-Learning-Machine", ""))))
+                return
+            if self.path == "/api/model-test/file":
+                analysis, signal = analyze_file(self.rfile.read(size),
+                    unquote(self.headers.get("X-Audio-Name", "audio")),
+                    unquote(self.headers.get("X-Audio-Zone", "zone_01")),
+                    self.headers.get("X-Audio-Start", "0"), return_signal=True)
+                self.respond(200, {"analysis": analysis, "model": model_test.predict(signal)})
                 return
             if self.path == "/api/audio/file":
                 self.respond(200, analyze_file(self.rfile.read(size),
@@ -173,7 +203,9 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict):
                 raise ValueError("Objet JSON attendu.")
-            if self.path == "/api/audio/devices":
+            if self.path == "/api/model-test/example":
+                result = model_test.test_example(data["record_id"])
+            elif self.path == "/api/audio/devices":
                 result = {"devices": audio_devices()}
             elif self.path == "/api/audio/start":
                 result = capture.start(data["device_id"], data["zone"])

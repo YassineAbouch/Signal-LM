@@ -168,3 +168,7 @@ Codex et Claude Code suivent [AGENTS.md](AGENTS.md) ; `CLAUDE.md` y renvoie.
 Travailler séquentiellement ou sur des branches distinctes.
 Les données et checkpoints sont exclus de Git. Les dépendances autorisent une
 plage de versions ; consulter `docs/VALIDATION.md` pour l'environnement testé.
+
+Mode d'annotation audio : [docs/LEARNING_MODE.md](docs/LEARNING_MODE.md).
+Interface locale : `/learn` pour constituer la base d'annotations ; `/test-model`
+pour essayer le spécialiste expérimental, dont les limites sont affichées.

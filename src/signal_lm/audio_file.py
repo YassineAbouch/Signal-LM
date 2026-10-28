@@ -11,6 +11,7 @@ import uuid
 import numpy as np
 
 from .audio import analyze_audio
+from .signal import Signal
 
 MAX_FILE_BYTES = 50 * 1024 * 1024
 decode_lock = threading.Lock()
@@ -76,7 +77,7 @@ def run_media(command, raw):
     return result.stdout
 
 
-def analyze_file(raw, filename, zone, start=0):
+def analyze_file(raw, filename, zone, start=0, *, return_signal=False):
     if not 0 < len(raw) <= MAX_FILE_BYTES:
         raise ValueError("Le fichier doit contenir au maximum 50 Mio.")
     if not isinstance(zone, str) or not zone.strip() or len(zone) > 80:
@@ -119,6 +120,9 @@ def analyze_file(raw, filename, zone, start=0):
                 "analyzed_at_utc": now.isoformat(), "acquisition_time_utc": None,
                 "source": "uploaded_file_first_audio_stream", "persisted": False,
                 "clipped": bool(np.any(np.abs(samples) >= 1))}
+            if return_signal:
+                return result, Signal(samples, rate, tuple(f"wav_ch_{i}" for i in range(channels)),
+                                      ("unspecified",) * channels)
             return result
     finally:
         decode_lock.release()

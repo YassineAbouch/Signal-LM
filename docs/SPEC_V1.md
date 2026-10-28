@@ -123,3 +123,18 @@ calibration indépendante de confiance n'est revendiquée.
 
 Les essais automatiques utilisent le synthétique. L'import MIMII n'entraîne rien ;
 un entraînement sur données réelles requiert une option explicite supplémentaire.
+
+## Annotation manuelle et essai web du spécialiste
+Le mode `/learn` conserve un segment audio seulement après une action explicite.
+Il garde tous les canaux et les amplitudes d'origine en NPZ float32, le libellé,
+la description et la provenance dans le manifeste existant. La sélection est
+arrondie aux indices d'échantillons dans une fenêtre d'au plus une seconde.
+Le split reste `unassigned` ; la description n'est pas une vérité terrain vérifiée.
+Aucun apprentissage automatique au clic. Le group_id repose sur la machine
+renseignée ou, à défaut, le hash de l'acquisition complète ; le découpage par
+machine/acquisition doit être revu avant un entraînement ultérieur.
+Le mode `/test-model` effectue une inférence en lecture seule avec le checkpoint
+spécialisé local : contrat strict (fréquence, longueur, canaux, unités), score et
+seuil fixé sur validation, sans confiance calibrée. Les mesures physiques restent
+indépendantes. La faible généralisation MIMII doit être visible dans l'interface.
+Voir [LEARNING_MODE.md](LEARNING_MODE.md).
