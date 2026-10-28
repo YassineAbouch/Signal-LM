@@ -86,9 +86,11 @@ Le reste de l'archive est disponible, mais n'est pas importé dans ce pilote.
 L'import complet commencé avant le choix du pilote est préservé séparément
 dans `data/mimii_fan_0db_partial_import`, non validé pour entraînement.
 
-**Aucun entraînement sur données réelles.** Le pipeline refuse ce fit sans
+**Aucun entraînement sur données réelles dans ce lot d'intégration.** Le pipeline refuse ce fit sans
 l'option explicite `--allow-real-training`. Aucun de ces fichiers ou poids
 n'est ajouté à Git. L'interface audio continue d'utiliser ses mesures déterministes.
+Le premier entraînement réel autorisé ultérieurement est documenté séparément
+dans [REAL_TRAINING_V1.md](REAL_TRAINING_V1.md).
 
 ## M4A dans l'interface audio
 

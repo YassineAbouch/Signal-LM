@@ -143,7 +143,9 @@ Les proportions effectives sont donc 50 % / 25 % / 25 % des enregistrements,
 avec seulement 2 / 1 / 1 machines : généralisation très peu documentée à ce stade.
 
 L'import n'entraîne rien. Le fit réel est refusé sans `--allow-real-training`.
-Il faudra d'abord fenêtrer ce jeu (`window`) et définir l'expérience. Aucun
-entraînement réel n'a été autorisé ou réalisé dans ce lot de vérification.
+Il faut d'abord fenêtrer ce jeu (`window`) et définir l'expérience. Aucun
+entraînement réel n'avait été réalisé au terme du lot de vérification initial.
+Le premier essai réel autorisé ensuite, son protocole et ses limites sont
+rapportés dans [REAL_TRAINING_V1.md](REAL_TRAINING_V1.md).
 Un import complet partiel antérieur a été conservé dans
 `data/mimii_fan_0db_partial_import` ; il n'est pas un jeu prêt à entraîner.
