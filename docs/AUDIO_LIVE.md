@@ -20,10 +20,13 @@ Changer la position et relancer pour explorer une autre fenêtre.
 
 FFmpeg et ffprobe doivent être dans PATH (versions 7.1.1 présentes sur ce poste).
 Le serveur reçoit le fichier localement en mémoire, extrait la première piste
-audio et analyse au plus une seconde. WAV, MP3, FLAC et OGG ainsi que les pistes
+audio et analyse au plus une seconde. WAV, M4A/AAC, MP3, FLAC et OGG ainsi que les pistes
 audio des conteneurs AVI sont pris en charge selon les codecs FFmpeg disponibles.
-Un AVI sans piste sonore produit une erreur explicite. Les fichiers qui demandent
-un accès disque aléatoire et ne se décodent pas par pipe peuvent être refusés.
+Un AVI sans piste sonore produit une erreur explicite. Un lecteur HTTP privé
+temporaire sur loopback fournit les plages d'octets en mémoire à FFmpeg. Il
+permet les repositionnements des M4A dont les métadonnées sont en fin de fichier,
+sans copie temporaire sur disque. Seuls les démultiplexeurs de médias autorisés
+sont activés ; les playlists ne sont pas interprétées.
 
 Limites : 50 Mio par fichier, 192 kHz, 8 canaux, délai de décodage de 30 secondes
 par opération. Le fichier n'est pas écrit sur disque, la fréquence et les canaux
@@ -40,6 +43,8 @@ amplitude/RMS et position de fenêtre, extraction d'un AVI contenant de l'audio,
 fichier invalide, position hors fichier et absence de FFmpeg. Dans le navigateur,
 `qa-tone.wav` synthétique à 48 kHz est chargé et analysé : 440 Hz, RMS 0,1768 FS,
 pic 0,25 FS. Aucun fichier réel utilisé pour ces tests.
+M4A/AAC standard avec métadonnées en fin de fichier : décodage d'une fenêtre
+à la seconde 1 vérifié sur sinusoïde synthétique 440 Hz à 16 kHz.
 
 Le backend utilise PyAudioWPatch 0.2.12.9 / WASAPI loopback sur Windows :
 https://github.com/s0d3s/PyAudioWPatch. L'extension `audio` est facultative ;

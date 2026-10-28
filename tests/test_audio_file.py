@@ -55,6 +55,24 @@ def test_avi_audio_track_is_decoded():
 
 
 @requires_ffmpeg
+def test_m4a_aac_with_metadata_at_end_is_seekable(tmp_path):
+    rate = 16000
+    t = np.arange(rate*3)/rate
+    wav_path, m4a_path = tmp_path/"source.wav", tmp_path/"source.m4a"
+    with wave.open(str(wav_path), "wb") as stream:
+        stream.setnchannels(1); stream.setsampwidth(2); stream.setframerate(rate)
+        stream.writeframes((.2*np.sin(2*np.pi*440*t)*32767).astype("<i2").tobytes())
+    subprocess.run([shutil.which("ffmpeg"), "-v", "error", "-i", str(wav_path),
+                    "-c:a", "aac", str(m4a_path)], check=True, timeout=15)
+    raw = m4a_path.read_bytes()
+    assert raw.index(b"moov") > raw.index(b"mdat")
+    result = analyze_file(raw, "test.m4a", "audio", 1)
+    assert result["sample_rate_hz"] == rate
+    assert result["measurements"][0]["dominant_frequency_hz"] == 440
+    assert result["measurements"][0]["rms"] == pytest.approx(.2 / np.sqrt(2), rel=.1)
+
+
+@requires_ffmpeg
 def test_bad_media_and_position_after_end_are_rejected():
     with pytest.raises(ValueError):
         analyze_file(b"not audio", "bad.wav", "zone_01")
