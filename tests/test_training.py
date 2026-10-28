@@ -64,7 +64,11 @@ def test_fit_has_no_test_access_and_final_evaluation_is_frozen(tmp_path, monkeyp
         return original_loader(root, record)
 
     monkeypatch.setattr(data, "load_signal", guarded)
-    payload = train(root, output, specialist="vibration", task_type=task, level="parents", epochs=1, batch_size=2)
+    progress_events = []
+    payload = train(root, output, specialist="vibration", task_type=task, level="parents", epochs=1,
+                    batch_size=2, cache_arrays=True, progress=progress_events.append)
+    assert len(progress_events) == 1 and progress_events[0]["epoch"] == 1
+    assert payload["training_config"]["cache_arrays"] is True
     assert "test" not in accessed
     assert payload["provenance"]["dataset_seed"] == 17
     assert len(payload["provenance"]["manifest_sha256"]) == 64
@@ -160,3 +164,16 @@ def test_imported_real_data_does_not_train_without_explicit_option(tmp_path, mon
     monkeypatch.setattr(data, "load_signal", no_loading)
     with pytest.raises(ValueError, match="allow-real-training"):
         train(tmp_path, tmp_path/"real.pt", specialist="vibration", task_type="anomaly_detection", level="parents")
+
+
+def test_cached_signals_remain_readonly_and_changed_source_is_detected(tmp_path):
+    records = fixture_dataset(tmp_path)
+    selected = select_records(records, "train", "vibration", "event_classification", "parents")
+    dataset = ManifestDataset(tmp_path, selected, ["chirp", "sine"], cache=True)
+    first = dataset.physical_signal(0)
+    assert dataset.physical_signal(0) is first
+    assert not first.samples.flags.writeable
+    with (tmp_path/selected[0].file_path).open("ab") as stream:
+        stream.write(b"changed")
+    with pytest.raises(ValueError, match="Integrity"):
+        dataset.verify_integrity()

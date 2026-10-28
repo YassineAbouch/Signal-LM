@@ -101,9 +101,10 @@ def encode_target(record, labels):
 
 
 class ManifestDataset(Dataset):
-    def __init__(self, root, records, labels, normalization=None, contract=None):
+    def __init__(self, root, records, labels, normalization=None, contract=None, cache=False):
         self.root = Path(root).resolve()
         self.records, self.labels, self.normalization = records, labels, normalization
+        self.cache = {} if cache else None
         hashes = {}
         for r in data.read_manifest(self.root/"manifest.jsonl"):
             hashes.setdefault(r.file_sha256, set()).add(r.split)
@@ -127,6 +128,8 @@ class ManifestDataset(Dataset):
         return len(self.records)
 
     def physical_signal(self, index):
+        if self.cache is not None and index in self.cache:
+            return self.cache[index]
         record = self.records[index]
         if record.file_sha256 == "unknown" or sha256_of_file(self.root / record.file_path) != record.file_sha256:
             raise ValueError(f"Integrity check failed: {record.record_id}")
@@ -135,7 +138,14 @@ class ManifestDataset(Dataset):
             raise ValueError("Array shape differs from manifest")
         if record.file_sha256 in self.constant_hashes and np.ptp(signal.samples, axis=0).any():
             raise ValueError("Hash exemption requires a constant no-event window")
+        if self.cache is not None:
+            self.cache[index] = signal
         return signal
+
+    def verify_integrity(self):
+        for record in self.records:
+            if sha256_of_file(self.root / record.file_path) != record.file_sha256:
+                raise ValueError(f"Integrity check failed: {record.record_id}")
 
     def __getitem__(self, index):
         values = self.physical_signal(index).samples.copy()

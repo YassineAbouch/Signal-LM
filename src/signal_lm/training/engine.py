@@ -84,7 +84,7 @@ def _json(root, name):
 
 def train(root, output, *, specialist, task_type, level="windows", epochs=1,
           batch_size=32, seed=42, learning_rate=1e-3, device="cpu", reference_quantile=.95,
-          allow_real_training=False):
+          allow_real_training=False, cache_arrays=False, progress=None):
     root = Path(root)
     if Path(output).exists():
         raise FileExistsError(output)
@@ -111,6 +111,8 @@ def train(root, output, *, specialist, task_type, level="windows", epochs=1,
 
     train_set = dataset("train", task_type == "anomaly_detection")
     validation_set = dataset("validation", task_type == "anomaly_detection")
+    if cache_arrays:
+        train_set.cache, validation_set.cache = {}, {}
     # Fit task vocabulary and input contract before loading any validation tensors.
     model_config = task_config(len(contract["units"]), task_type, len(labels), seed)
     model = build_task_model(model_config, task_type, len(labels)).to(device)
@@ -151,6 +153,8 @@ def train(root, output, *, specialist, task_type, level="windows", epochs=1,
         if val_loss < best_loss:
             best_loss, selected_epoch, best_steps = val_loss, epoch, steps
             best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
+        if progress is not None:
+            progress({**history[-1], "selected_epoch": selected_epoch, "optimizer_steps": steps})
     model.load_state_dict(best_state)
     threshold, calibration = .5, {"method": "fixed_probability_threshold", "value": .5,
                                   "confidence_calibrated": False}
@@ -167,6 +171,9 @@ def train(root, output, *, specialist, task_type, level="windows", epochs=1,
                     labels, threshold, summary, center) for split in ("train", "validation")}
     if digest != sha256_of_file(root / "manifest.jsonl"):
         raise ValueError("Manifest changed during fitting")
+    if cache_arrays:
+        train_set.verify_integrity()
+        validation_set.verify_integrity()
     payload = {"format": FORMAT, "format_version": 1, "status": "trained", "specialist": specialist,
         "task_type": task_type, "labels": labels, "label_to_index": {label: i for i, label in enumerate(labels)},
         "model_config": asdict(model_config),
@@ -176,7 +183,8 @@ def train(root, output, *, specialist, task_type, level="windows", epochs=1,
         "threshold": threshold, "calibration": calibration, "selected_epoch": selected_epoch,
         "selection": "minimum_validation_loss; reference_only_for_anomaly", "history": history,
         "training_config": {"epochs": epochs, "batch_size": batch_size, "seed": seed,
-            "learning_rate": learning_rate, "weight_decay": 1e-4, "device": device},
+            "learning_rate": learning_rate, "weight_decay": 1e-4, "device": device,
+            "cache_arrays": cache_arrays},
         "provenance": {"dataset_id": config.get("dataset_id", root.name),
             "dataset_seed": config.get("seed"), "training_seed": seed,
             "source_ids": sorted({r.source_id for r in train_records}),
