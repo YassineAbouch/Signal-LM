@@ -12,6 +12,35 @@ audio, renseigner la zone et cliquer **Démarrer la capture**. Lancer un son sur
 cette sortie. **Arrêter la capture** ferme le périphérique et libère le tampon.
 Le microphone n'est pas utilisé et rien n'est enregistré sur disque.
 
+## Analyser un fichier WAV ou la piste sonore d'un AVI
+
+Dans `/audio`, choisir **Fichier audio**, puis **Choisir un fichier audio / AVI**.
+Renseigner la zone et le début de fenêtre en secondes, puis **Analyser le fichier**.
+Changer la position et relancer pour explorer une autre fenêtre.
+
+FFmpeg et ffprobe doivent être dans PATH (versions 7.1.1 présentes sur ce poste).
+Le serveur reçoit le fichier localement en mémoire, extrait la première piste
+audio et analyse au plus une seconde. WAV, MP3, FLAC et OGG ainsi que les pistes
+audio des conteneurs AVI sont pris en charge selon les codecs FFmpeg disponibles.
+Un AVI sans piste sonore produit une erreur explicite. Les fichiers qui demandent
+un accès disque aléatoire et ne se décodent pas par pipe peuvent être refusés.
+
+Limites : 50 Mio par fichier, 192 kHz, 8 canaux, délai de décodage de 30 secondes
+par opération. Le fichier n'est pas écrit sur disque, la fréquence et les canaux
+sont conservés, sans normalisation d'amplitude. L'amplitude décodée est exprimée
+en FS. Une seule analyse de fichier est exécutée à la fois. Aucun son n'est joué.
+
+La fenêtre se termine avant une seconde si le fichier se termine plus tôt.
+L'horodatage correspond à l'analyse ; la date d'acquisition reste inconnue et
+la position dans le fichier est exprimée séparément en secondes. Changer de
+source arrête d'abord une éventuelle capture live de cet onglet.
+
+Validation : suite complète de 52 tests réussis ; WAV synthétique stéréo,
+amplitude/RMS et position de fenêtre, extraction d'un AVI contenant de l'audio,
+fichier invalide, position hors fichier et absence de FFmpeg. Dans le navigateur,
+`qa-tone.wav` synthétique à 48 kHz est chargé et analysé : 440 Hz, RMS 0,1768 FS,
+pic 0,25 FS. Aucun fichier réel utilisé pour ces tests.
+
 Le backend utilise PyAudioWPatch 0.2.12.9 / WASAPI loopback sur Windows :
 https://github.com/s0d3s/PyAudioWPatch. L'extension `audio` est facultative ;
 le reste de Signal-LM fonctionne sans ce module.
