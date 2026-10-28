@@ -4,16 +4,16 @@
 
 Document de préparation du lot 2. Le lot 1 reste un encodeur vierge et des
 mesures déterministes. Aucun entraînement, import de données réelles ou choix
-de classes n'est effectué par ce document. Le domaine retenu est « autres signaux
-industriels ». Le signal précis et les critères métier restent à choisir avec
-le responsable du projet.
+de classes n'est effectué par ce document. La première spécialité retenue est
+l'analyse des vibrations (choix utilisateur du 28 octobre 2026). Le phénomène
+à détecter et les critères métier restent à choisir avec le responsable du projet.
 
 ## Fiche à compléter avant l'implémentation métier
 
 | Décision | Valeur actuelle | Information nécessaire |
 | --- | --- | --- |
-| Domaine | Autres signaux industriels | Choix utilisateur ; signal précis à définir |
-| Signal prioritaire | À définir | Par exemple courant, pression, température, débit ou couple |
+| Domaine | Vibrations | Choix utilisateur |
+| Signal prioritaire | Signal vibratoire | Grandeur mesurée, capteur et axes à préciser |
 | Usage | À définir | Décision attendue, utilisateur et conséquences d'une erreur |
 | Objectif appris | À choisir | Classification exclusive, multi-label ou anomalie |
 | Classes / état de référence | Non définis | Définition observable et provenance des étiquettes |
@@ -26,6 +26,21 @@ le responsable du projet.
 Ne pas choisir un nombre de classes ni une durée de fenêtre arbitraires pour
 remplir cette fiche. La durée devra permettre d'observer les phénomènes visés ;
 le champ réceptif local actuel est limité à 19 échantillons avant pooling.
+
+## Informations attendues pour les vibrations
+
+- Équipement surveillé et phénomène à détecter ou reconnaître.
+- Grandeur réellement mesurée, unités et axes ; ne pas supposer qu'il s'agit
+  d'accélération ni convertir implicitement en vitesse ou déplacement.
+- Capteur, position, orientation et montage ; fréquence d'échantillonnage
+  et éventuel filtrage appliqué par l'acquisition.
+- Conditions de fonctionnement disponibles, notamment vitesse et charge.
+- Présence d'acquisitions de référence et d'étiquettes vérifiées, à examiner
+  plus tard lorsque l'utilisation des données réelles sera autorisée.
+
+Aucune liste de défauts, fréquence d'échantillonnage ou fenêtre métier n'est
+fixée avant ces réponses. Les sinusoïdes synthétiques du lot 1 vérifient les
+mesures physiques et ne représentent pas des défauts mécaniques validés.
 
 ## Protocole de données proposé
 
