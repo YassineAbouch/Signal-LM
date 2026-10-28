@@ -1,0 +1,417 @@
+{
+  "dataset_id": "synthetic_acoustic_events_v1",
+  "specialist": "acoustic",
+  "notes": "Synthetic simple acoustic events on a 16 kHz grid. Labels describe waveform shapes (damped burst, noise burst, harmonic hum); they are not identified sound sources.",
+  "sample_rate_hz": 16000,
+  "n_samples": 16000,
+  "channel_names": [
+    "synthetic_mic"
+  ],
+  "units": [
+    "unspecified"
+  ],
+  "seed": 20261029,
+  "n_parents": 6,
+  "snr_db_levels": [
+    -10,
+    -5,
+    0,
+    5,
+    10,
+    20,
+    null
+  ],
+  "noise": {
+    "type": "colored_noise",
+    "exponent": {
+      "choice": [
+        0.0,
+        1.0
+      ]
+    }
+  },
+  "recipes": [
+    {
+      "recipe_id": "short_damped_burst",
+      "task_type": "event_detection",
+      "labels": [
+        "damped_burst_short"
+      ],
+      "components": [
+        {
+          "type": "damped_oscillation",
+          "frequency_hz": [
+            800,
+            5000
+          ],
+          "onset_fraction": [
+            0.1,
+            0.7
+          ],
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "decay_rate_per_s": [
+            150,
+            800
+          ],
+          "label": "damped_burst_short"
+        }
+      ]
+    },
+    {
+      "recipe_id": "low_damped_burst",
+      "task_type": "event_detection",
+      "labels": [
+        "damped_burst_low"
+      ],
+      "components": [
+        {
+          "type": "damped_oscillation",
+          "frequency_hz": [
+            60,
+            600
+          ],
+          "onset_fraction": [
+            0.1,
+            0.6
+          ],
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "decay_rate_per_s": [
+            15,
+            80
+          ],
+          "label": "damped_burst_low"
+        }
+      ]
+    },
+    {
+      "recipe_id": "two_bursts",
+      "task_type": "event_detection",
+      "labels": [
+        "damped_burst_short"
+      ],
+      "components": [
+        {
+          "type": "damped_oscillation",
+          "frequency_hz": [
+            800,
+            4000
+          ],
+          "onset_fraction": [
+            0.05,
+            0.35
+          ],
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "decay_rate_per_s": [
+            200,
+            800
+          ],
+          "label": "damped_burst_short"
+        },
+        {
+          "type": "damped_oscillation",
+          "frequency_hz": [
+            800,
+            4000
+          ],
+          "onset_fraction": [
+            0.55,
+            0.85
+          ],
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "decay_rate_per_s": [
+            200,
+            800
+          ],
+          "label": "damped_burst_short"
+        }
+      ]
+    },
+    {
+      "recipe_id": "modulated_noise_burst",
+      "task_type": "event_detection",
+      "labels": [
+        "noise_burst_modulated"
+      ],
+      "components": [
+        {
+          "type": "noise_burst",
+          "onset_fraction": [
+            0.1,
+            0.5
+          ],
+          "duration_fraction": [
+            0.15,
+            0.4
+          ],
+          "low_hz": [
+            500,
+            1500
+          ],
+          "high_hz": [
+            2000,
+            6000
+          ],
+          "amplitude": [
+            0.2,
+            0.8
+          ],
+          "modulation_hz": [
+            3,
+            25
+          ],
+          "label": "noise_burst_modulated"
+        }
+      ]
+    },
+    {
+      "recipe_id": "harmonic_hum",
+      "task_type": "event_classification",
+      "labels": [
+        "harmonic_hum"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            40,
+            120
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              4,
+              12
+            ]
+          },
+          "amplitude": [
+            0.1,
+            0.5
+          ],
+          "decay": [
+            0.5,
+            0.85
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "hum_plus_burst",
+      "task_type": "multilabel_classification",
+      "labels": [
+        "harmonic_hum",
+        "damped_burst_short"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            40,
+            120
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              4,
+              10
+            ]
+          },
+          "amplitude": [
+            0.1,
+            0.4
+          ],
+          "decay": [
+            0.5,
+            0.85
+          ]
+        },
+        {
+          "type": "damped_oscillation",
+          "frequency_hz": [
+            800,
+            4000
+          ],
+          "onset_fraction": [
+            0.2,
+            0.7
+          ],
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "decay_rate_per_s": [
+            200,
+            800
+          ],
+          "label": "damped_burst_short"
+        }
+      ]
+    },
+    {
+      "recipe_id": "hum_plus_noise_burst",
+      "task_type": "multilabel_classification",
+      "labels": [
+        "harmonic_hum",
+        "noise_burst_modulated"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            40,
+            120
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              4,
+              10
+            ]
+          },
+          "amplitude": [
+            0.1,
+            0.4
+          ],
+          "decay": [
+            0.5,
+            0.85
+          ]
+        },
+        {
+          "type": "noise_burst",
+          "onset_fraction": [
+            0.1,
+            0.5
+          ],
+          "duration_fraction": [
+            0.15,
+            0.4
+          ],
+          "low_hz": [
+            500,
+            1500
+          ],
+          "high_hz": [
+            2000,
+            6000
+          ],
+          "amplitude": [
+            0.2,
+            0.8
+          ],
+          "modulation_hz": [
+            3,
+            25
+          ],
+          "label": "noise_burst_modulated"
+        }
+      ]
+    },
+    {
+      "recipe_id": "hum_reference",
+      "task_type": "anomaly_detection",
+      "labels": [
+        "reference"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            45,
+            65
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              5,
+              10
+            ]
+          },
+          "amplitude": [
+            0.2,
+            0.4
+          ],
+          "decay": [
+            0.6,
+            0.8
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "hum_plus_impulses",
+      "task_type": "anomaly_detection",
+      "labels": [
+        "deviation",
+        "added_irregular_impulses"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            45,
+            65
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              5,
+              10
+            ]
+          },
+          "amplitude": [
+            0.2,
+            0.4
+          ],
+          "decay": [
+            0.6,
+            0.8
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        },
+        {
+          "type": "impulses",
+          "rate_hz": [
+            3,
+            15
+          ],
+          "jitter_samples": {
+            "int_uniform": [
+              100,
+              600
+            ]
+          },
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "width_samples": {
+            "int_uniform": [
+              4,
+              30
+            ]
+          },
+          "kind": "half_sine",
+          "label": "impulse"
+        }
+      ]
+    }
+  ]
+}

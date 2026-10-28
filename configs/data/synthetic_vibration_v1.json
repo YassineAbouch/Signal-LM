@@ -1,0 +1,610 @@
+{
+  "dataset_id": "synthetic_vibration_v1",
+  "specialist": "vibration",
+  "notes": "Synthetic pipeline-verification set. Labels are descriptive signal patterns, not mechanical diagnoses. Proves nothing about industrial performance.",
+  "sample_rate_hz": 8192,
+  "n_samples": 8192,
+  "channel_names": [
+    "synthetic_accel"
+  ],
+  "units": [
+    "a.u."
+  ],
+  "seed": 20261028,
+  "n_parents": 6,
+  "snr_db_levels": [
+    -10,
+    -5,
+    0,
+    5,
+    10,
+    20,
+    null
+  ],
+  "noise": {
+    "type": "colored_noise",
+    "exponent": {
+      "choice": [
+        0.0,
+        1.0,
+        2.0
+      ]
+    }
+  },
+  "recipes": [
+    {
+      "recipe_id": "sine",
+      "task_type": "event_classification",
+      "labels": [
+        "sine"
+      ],
+      "components": [
+        {
+          "type": "sine",
+          "frequency_hz": [
+            20,
+            1500
+          ],
+          "amplitude": {
+            "log_uniform": [
+              0.1,
+              2.0
+            ]
+          },
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "multi_sine",
+      "task_type": "event_classification",
+      "labels": [
+        "multi_sine"
+      ],
+      "components": [
+        {
+          "type": "sine",
+          "frequency_hz": [
+            20,
+            400
+          ],
+          "amplitude": [
+            0.3,
+            1.5
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        },
+        {
+          "type": "sine",
+          "frequency_hz": [
+            500,
+            2500
+          ],
+          "amplitude": [
+            0.1,
+            1.0
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "harmonics",
+      "task_type": "event_classification",
+      "labels": [
+        "harmonic_series"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            20,
+            300
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              3,
+              8
+            ]
+          },
+          "amplitude": [
+            0.3,
+            1.5
+          ],
+          "decay": [
+            0.4,
+            0.8
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "chirp",
+      "task_type": "event_classification",
+      "labels": [
+        "chirp"
+      ],
+      "components": [
+        {
+          "type": "chirp",
+          "f_start_hz": [
+            20,
+            500
+          ],
+          "f_end_hz": [
+            600,
+            3000
+          ],
+          "amplitude": [
+            0.3,
+            1.5
+          ],
+          "method": {
+            "choice": [
+              "linear",
+              "exponential"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "recipe_id": "amplitude_modulated",
+      "task_type": "event_classification",
+      "labels": [
+        "amplitude_modulated"
+      ],
+      "components": [
+        {
+          "type": "amplitude_modulation",
+          "carrier_hz": [
+            100,
+            1500
+          ],
+          "modulation_hz": [
+            1,
+            30
+          ],
+          "depth": [
+            0.3,
+            1.0
+          ],
+          "amplitude": [
+            0.3,
+            1.5
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "isolated_impulses",
+      "task_type": "event_detection",
+      "labels": [
+        "isolated_impulses"
+      ],
+      "components": [
+        {
+          "type": "impulses",
+          "count": {
+            "int_uniform": [
+              1,
+              3
+            ]
+          },
+          "amplitude": [
+            1.0,
+            4.0
+          ],
+          "width_samples": {
+            "int_uniform": [
+              1,
+              12
+            ]
+          },
+          "kind": {
+            "choice": [
+              "rect",
+              "triangle",
+              "half_sine"
+            ]
+          },
+          "label": "impulse"
+        }
+      ]
+    },
+    {
+      "recipe_id": "periodic_impulses",
+      "task_type": "event_detection",
+      "labels": [
+        "periodic_impulses"
+      ],
+      "components": [
+        {
+          "type": "impulses",
+          "rate_hz": [
+            5,
+            60
+          ],
+          "amplitude": [
+            1.0,
+            4.0
+          ],
+          "width_samples": {
+            "int_uniform": [
+              1,
+              8
+            ]
+          },
+          "kind": "half_sine",
+          "label": "impulse"
+        }
+      ]
+    },
+    {
+      "recipe_id": "irregular_impulses",
+      "task_type": "event_detection",
+      "labels": [
+        "irregular_impulses"
+      ],
+      "components": [
+        {
+          "type": "impulses",
+          "rate_hz": [
+            5,
+            40
+          ],
+          "jitter_samples": {
+            "int_uniform": [
+              20,
+              120
+            ]
+          },
+          "amplitude": [
+            1.0,
+            4.0
+          ],
+          "width_samples": {
+            "int_uniform": [
+              1,
+              8
+            ]
+          },
+          "kind": "triangle",
+          "label": "impulse"
+        }
+      ]
+    },
+    {
+      "recipe_id": "damped_burst",
+      "task_type": "event_detection",
+      "labels": [
+        "damped_burst"
+      ],
+      "components": [
+        {
+          "type": "damped_oscillation",
+          "frequency_hz": [
+            200,
+            2500
+          ],
+          "onset_fraction": [
+            0.1,
+            0.7
+          ],
+          "amplitude": [
+            0.5,
+            3.0
+          ],
+          "decay_rate_per_s": [
+            20,
+            200
+          ],
+          "label": "damped_burst"
+        }
+      ]
+    },
+    {
+      "recipe_id": "sine_plus_periodic_impulses",
+      "task_type": "multilabel_classification",
+      "labels": [
+        "sine",
+        "periodic_impulses"
+      ],
+      "components": [
+        {
+          "type": "sine",
+          "frequency_hz": [
+            20,
+            400
+          ],
+          "amplitude": [
+            0.5,
+            1.5
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        },
+        {
+          "type": "impulses",
+          "rate_hz": [
+            5,
+            60
+          ],
+          "amplitude": [
+            0.5,
+            3.0
+          ],
+          "width_samples": {
+            "int_uniform": [
+              1,
+              8
+            ]
+          },
+          "kind": "half_sine",
+          "label": "impulse"
+        }
+      ]
+    },
+    {
+      "recipe_id": "harmonics_plus_chirp",
+      "task_type": "multilabel_classification",
+      "labels": [
+        "harmonic_series",
+        "chirp"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            20,
+            200
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              3,
+              6
+            ]
+          },
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "decay": [
+            0.4,
+            0.8
+          ]
+        },
+        {
+          "type": "chirp",
+          "f_start_hz": [
+            100,
+            500
+          ],
+          "f_end_hz": [
+            600,
+            2500
+          ],
+          "amplitude": [
+            0.2,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "reference_pattern",
+      "task_type": "anomaly_detection",
+      "labels": [
+        "reference"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            25,
+            60
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              3,
+              5
+            ]
+          },
+          "amplitude": [
+            0.5,
+            1.0
+          ],
+          "decay": [
+            0.5,
+            0.7
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "reference_plus_impulses",
+      "task_type": "anomaly_detection",
+      "labels": [
+        "deviation",
+        "added_periodic_impulses"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            25,
+            60
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              3,
+              5
+            ]
+          },
+          "amplitude": [
+            0.5,
+            1.0
+          ],
+          "decay": [
+            0.5,
+            0.7
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        },
+        {
+          "type": "impulses",
+          "rate_hz": [
+            8,
+            40
+          ],
+          "amplitude": [
+            0.3,
+            2.0
+          ],
+          "width_samples": {
+            "int_uniform": [
+              1,
+              6
+            ]
+          },
+          "kind": "half_sine",
+          "label": "impulse"
+        }
+      ]
+    },
+    {
+      "recipe_id": "reference_plus_level_change",
+      "task_type": "anomaly_detection",
+      "labels": [
+        "deviation",
+        "level_change"
+      ],
+      "components": [
+        {
+          "type": "harmonics",
+          "fundamental_hz": [
+            25,
+            60
+          ],
+          "n_harmonics": {
+            "int_uniform": [
+              3,
+              5
+            ]
+          },
+          "amplitude": [
+            0.5,
+            1.0
+          ],
+          "decay": [
+            0.5,
+            0.7
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        },
+        {
+          "type": "level_step",
+          "step_fraction": [
+            0.3,
+            0.7
+          ],
+          "step_amplitude": [
+            0.5,
+            2.0
+          ],
+          "label": "level_change"
+        }
+      ]
+    },
+    {
+      "recipe_id": "sine_with_drift",
+      "task_type": "multilabel_classification",
+      "labels": [
+        "sine",
+        "drift"
+      ],
+      "components": [
+        {
+          "type": "sine",
+          "frequency_hz": [
+            50,
+            800
+          ],
+          "amplitude": [
+            0.3,
+            1.0
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        },
+        {
+          "type": "drift",
+          "slope_per_s": [
+            -2.0,
+            2.0
+          ],
+          "offset": [
+            -1.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    {
+      "recipe_id": "saturated_sine",
+      "task_type": "multilabel_classification",
+      "labels": [
+        "sine",
+        "saturated"
+      ],
+      "saturation_limit": [
+        0.3,
+        0.8
+      ],
+      "components": [
+        {
+          "type": "sine",
+          "frequency_hz": [
+            50,
+            800
+          ],
+          "amplitude": [
+            1.0,
+            2.0
+          ],
+          "phase_rad": [
+            0,
+            6.2831853
+          ]
+        }
+      ]
+    }
+  ]
+}

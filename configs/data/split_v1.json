@@ -1,0 +1,30 @@
+{
+  "seed": 7,
+  "fractions": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "holdout": [
+    {
+      "field": "generation.components.0.frequency_hz",
+      "range": [
+        1000,
+        1500
+      ],
+      "split": "test",
+      "reason": "unseen frequency band for the 'sine' recipe (generalisation to new parameters)"
+    },
+    {
+      "field": "generation.components.0.decay_rate_per_s",
+      "range": [
+        650,
+        800
+      ],
+      "split": "test",
+      "reason": "unseen fastest decay rates for damped bursts"
+    }
+  ],
+  "notes": "Assignment unit = group_id (synthetic parent realisation; machine/session/acquisition for real data). All SNR variants of a parent stay together. Holdout rules are applied before the random assignment.",
+  "stratify_by": "session_id"
+}

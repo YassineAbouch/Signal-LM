@@ -1,0 +1,57 @@
+{
+  "dataset_id": "synthetic_slow_series_v1",
+  "specialist": "slow_series",
+  "notes": "Slow industrial-style series (1 Hz, 1 h) for drift / level change / saturation patterns. Values are dimensionless; they are not temperatures or pressures and carry no process meaning.",
+  "sample_rate_hz": 1,
+  "n_samples": 3600,
+  "channel_names": ["synthetic_slow"],
+  "units": ["a.u."],
+  "seed": 20261030,
+  "n_parents": 4,
+  "snr_db_levels": [0, 10, 20, null],
+  "noise": {"type": "white_noise"},
+  "recipes": [
+    {
+      "recipe_id": "linear_drift",
+      "task_type": "event_classification",
+      "labels": ["linear_drift"],
+      "components": [
+        {"type": "drift", "slope_per_s": [-0.002, 0.002], "offset": [-1.0, 1.0]}
+      ]
+    },
+    {
+      "recipe_id": "level_change",
+      "task_type": "event_detection",
+      "labels": ["level_change"],
+      "components": [
+        {"type": "level_step", "step_fraction": [0.3, 0.7], "step_amplitude": [-3.0, 3.0], "label": "level_change"}
+      ]
+    },
+    {
+      "recipe_id": "slow_oscillation",
+      "task_type": "event_classification",
+      "labels": ["slow_oscillation"],
+      "components": [
+        {"type": "sine", "frequency_hz": [0.0005, 0.005], "amplitude": [0.5, 3.0], "phase_rad": [0, 6.2831853]}
+      ]
+    },
+    {
+      "recipe_id": "drift_plus_level_change",
+      "task_type": "multilabel_classification",
+      "labels": ["linear_drift", "level_change"],
+      "components": [
+        {"type": "drift", "slope_per_s": [-0.002, 0.002], "offset": [-1.0, 1.0]},
+        {"type": "level_step", "step_fraction": [0.3, 0.7], "step_amplitude": [-3.0, 3.0], "label": "level_change"}
+      ]
+    },
+    {
+      "recipe_id": "saturated_oscillation",
+      "task_type": "multilabel_classification",
+      "labels": ["slow_oscillation", "saturated"],
+      "saturation_limit": [0.8, 1.5],
+      "components": [
+        {"type": "sine", "frequency_hz": [0.0005, 0.005], "amplitude": [2.0, 4.0], "phase_rad": [0, 6.2831853]}
+      ]
+    }
+  ]
+}
