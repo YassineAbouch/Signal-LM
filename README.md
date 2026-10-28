@@ -73,6 +73,33 @@ Pour reproduire l'environnement Windows validé, installer d'abord PyTorch :
 Ces versions décrivent ce poste Python 3.13 / NVIDIA ; elles ne remplacent pas
 le choix d'un paquet compatible pour un autre matériel.
 
+## Interface web locale
+
+Depuis `E:\Signal-LM`, lancer :
+
+```powershell
+.\.venv\Scripts\python.exe -m signal_lm.web
+```
+
+Ouvrir http://127.0.0.1:8765 dans le navigateur. Arrêter avec `Ctrl+C`.
+Le port peut être choisi avec `--port 8766`.
+
+L'interface propose une sinusoïde configurable, l'import CSV avec sélection
+explicite des colonnes et unités, le choix du canal, les courbes temporelle/FFT,
+les mesures physiques, l'export JSON et le diagnostic PyTorch/CUDA.
+Les valeurs CSV sont traitées en mémoire par le serveur local, sans sauvegarde
+automatique. L'export JSON est un téléchargement volontaire contenant les mesures
+et les valeurs affichées ; il est à conserver hors Git pour des données réelles.
+La démo démarre automatiquement ; aucun fichier réel n'est chargé par défaut.
+
+Limites : requête de 2 Mio, 100 000 échantillons, 8 canaux. La courbe temporelle
+est un aperçu réduit à 1 800 points au maximum, pouvant masquer des transitoires ;
+les mesures et la FFT utilisent tous les échantillons. La FFT affichée conserve
+les maxima des groupes de points si le spectre est réduit pour l'affichage.
+Les timestamps CSV ne sont pas contrôlés. Aucun diagnostic appris ni entraînement.
+Le serveur écoute uniquement sur `127.0.0.1` : cette version n'est pas un service
+Internet ou multi-utilisateur. Aucun nouvel outil JavaScript n'est à installer.
+
 ## Analyse d'un array
 
 ```python

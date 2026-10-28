@@ -45,3 +45,16 @@ décrivent cette exécution, pas une exigence de version CUDA pour le poste Wind
 Le checkpoint et `.venv` restent exclus de Git. La suite pytest utilise le CPU ;
 le script complémentaire vérifie le modèle par défaut sur GPU. Aucun entraînement
 métier, aucune donnée réelle, mesure de latence ou précision industrielle.
+
+## Interface web locale — 28 octobre 2026
+
+- Serveur Python standard sur `127.0.0.1`, interface HTML/CSS/JavaScript sans CDN.
+- Suite complète : 30 tests réussis, dont démo web, sélection CSV/unités,
+  entrées invalides, routes HTTP, refus d'origine étrangère et chemin inconnu.
+- JavaScript vérifié par `node --check` ; roue Python construite avec les assets web.
+- Navigateur : démo initiale 120 Hz, modification à 50 Hz et actualisation des
+  mesures/courbes vérifiées ; GPU CUDA et nombre de paramètres affichés.
+- Aucun fichier réel utilisé. Import fichier et export JSON non vérifiés par
+  interaction navigateur ; parsing CSV et endpoint couverts par les tests.
+- Mise en page adaptative prévue ; rendu mobile non vérifié dans cette session.
+- Aucun hébergement Internet, contrôle d'accès multi-utilisateur ou entraînement.

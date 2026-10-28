@@ -18,5 +18,8 @@ signal-lm = "signal_lm.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+signal_lm = ["static/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
