@@ -111,6 +111,9 @@ print(result["embedding"].shape)  # [1, 64], aucune interprétation apprise
 ## Collaboration
 
 La spécification est dans [docs/SPEC_V1.md](docs/SPEC_V1.md).
+Le cadrage du premier spécialiste et son protocole proposé sont dans
+[docs/SPECIALIZATION_PLAN.md](docs/SPECIALIZATION_PLAN.md) ; les décisions métier
+restent à définir avant entraînement.
 Codex et Claude Code suivent [AGENTS.md](AGENTS.md) ; `CLAUDE.md` y renvoie.
 Travailler séquentiellement ou sur des branches distinctes.
 Les données et checkpoints sont exclus de Git. Les dépendances autorisent une
