@@ -154,6 +154,12 @@ print(result["embedding"].shape)  # [1, 64], aucune interprétation apprise
 
 ## Collaboration
 
+Le pipeline spécialisé du jalon 2 est documenté dans
+[docs/TRAINING.md](docs/TRAINING.md) : lecture des manifestes, quatre tâches,
+normalisation train-only et évaluation finale séparée. Les essais synthétiques
+ne constituent pas une validation industrielle et n'activent pas le modèle
+spécialisé dans l'interface audio, qui continue d'afficher le socle vierge.
+
 La spécification est dans [docs/SPEC_V1.md](docs/SPEC_V1.md).
 Le cadrage du premier spécialiste et son protocole proposé sont dans
 [docs/SPECIALIZATION_PLAN.md](docs/SPECIALIZATION_PLAN.md) ; les décisions métier

@@ -19,12 +19,23 @@ $sets = @(
 foreach ($s in $sets) {
     $root = "data\$($s.id)"
     Write-Host "== $($s.id)"
-    & $py -m signal_lm.data.cli generate --config "configs\data\$($s.id).json" --root $root @ow
-    & $py -m signal_lm.data.cli split --root $root --config configs\data\split_v1.json
+    if (-not (Test-Path "$root\manifest.jsonl") -or $Overwrite) {
+        & $py -m signal_lm.data.cli generate --config "configs\data\$($s.id).json" --root $root @ow
+        if ($LASTEXITCODE -ne 0) { throw "Generation failed: $root" }
+    }
+    $records = @(Get-Content "$root\manifest.jsonl" | ForEach-Object { $_ | ConvertFrom-Json })
+    if (@($records | Where-Object { $_.split -eq "unassigned" }).Count -gt 0) {
+        & $py -m signal_lm.data.cli split --root $root --config configs\data\split_v1.json
+        if ($LASTEXITCODE -ne 0) { throw "Split failed: $root" }
+    }
     if ($s.window -gt 0) {
-        & $py -m signal_lm.data.cli window --root $root --window-samples $s.window --hop-samples $s.hop
+        if (@($records | Where-Object { $null -ne $_.parent_record_id }).Count -eq 0) {
+            & $py -m signal_lm.data.cli window --root $root --window-samples $s.window --hop-samples $s.hop
+            if ($LASTEXITCODE -ne 0) { throw "Windowing failed: $root" }
+        }
     }
     & $py -m signal_lm.data.cli validate --root $root --regenerate --strict
+    if ($LASTEXITCODE -ne 0) { throw "Validation failed: $root" }
 }
 
 Write-Host "Rapports : data\<jeu>\quality_report.md"

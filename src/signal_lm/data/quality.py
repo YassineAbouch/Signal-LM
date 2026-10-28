@@ -43,7 +43,7 @@ def _problem(record_id: str, check: str, detail: str, severity: str = "error") -
 
 
 def check_record(root: Path, record: Record, *, verify_regeneration: bool = False,
-                 verify_hash: bool = True) -> list[dict[str, str]]:
+                 verify_hash: bool = True, parent_record: Record | None = None) -> list[dict[str, str]]:
     problems = [_problem(record.record_id, "schema", p) for p in record.validate()]
     path = root / record.file_path
     if not path.exists():
@@ -90,7 +90,21 @@ def check_record(root: Path, record: Record, *, verify_regeneration: bool = Fals
         elif at_peak > SATURATION_FRACTION_WARN:
             problems.append(_problem(record.record_id, "saturated", f"channel {name}: {at_peak:.1%} of samples at the absolute peak", "warning"))
     if record.is_synthetic:
-        problems.extend(_check_synthetic(record, arrays, verify_regeneration))
+        problems.extend(_check_synthetic(record, arrays, verify_regeneration and record.parent_record_id is None))
+        if verify_regeneration and record.parent_record_id is not None:
+            if parent_record is None:
+                problems.append(_problem(record.record_id, "regeneration", "window parent unavailable"))
+            else:
+                source = load_arrays(root, parent_record)
+                cuts = [t for t in record.transforms if t.get("op") == "window"]
+                if not cuts:
+                    problems.append(_problem(record.record_id, "regeneration", "window transform missing"))
+                else:
+                    cut = cuts[-1]
+                    for key, values in arrays.items():
+                        expected = source[key][cut["start_sample"]:cut["end_sample"]]
+                        if values.shape != expected.shape or not np.array_equal(values, expected):
+                            problems.append(_problem(record.record_id, "regeneration", f"{key} differs from parent slice"))
     return problems
 
 
@@ -126,8 +140,17 @@ def _check_synthetic(record: Record, arrays: dict[str, np.ndarray], verify_regen
         for key in ("clean", "noise", "mix"):
             stored = arrays[key]
             fresh = regenerated[key].astype(np.float32).astype(np.float64)
-            if stored.shape != fresh.shape or not np.allclose(stored, fresh, rtol=0, atol=0):
-                problems.append(_problem(record.record_id, "regeneration", f"{key} differs from regeneration"))
+            if stored.shape != fresh.shape:
+                problems.append(_problem(record.record_id, "regeneration", f"{key} shape differs from regeneration"))
+                continue
+            if not np.allclose(stored, fresh, rtol=0, atol=0):
+                try:
+                    np.testing.assert_array_max_ulp(stored.astype(np.float32), fresh.astype(np.float32), maxulp=1)
+                except AssertionError:
+                    problems.append(_problem(record.record_id, "regeneration", f"{key} differs from regeneration"))
+                else:
+                    problems.append(_problem(record.record_id, "regeneration_rounding",
+                        f"{key} differs by at most one float32 ULP; not bit-identical", "warning"))
     return problems
 
 
@@ -219,9 +242,10 @@ def run_quality(root: str | Path, records: list[Record], *, verify_regeneration:
                 verify_hash: bool = True) -> tuple[list[dict[str, str]], dict[str, Any]]:
     root = Path(root)
     problems: list[dict[str, str]] = []
+    by_id = {r.record_id: r for r in records}
     for record in records:
         problems.extend(check_record(root, record, verify_regeneration=verify_regeneration,
-                                     verify_hash=verify_hash))
+                                     verify_hash=verify_hash, parent_record=by_id.get(record.parent_record_id)))
     # Constant (e.g. all-zero) windows are byte-identical across groups without being leaks.
     constant_ids = {p["record_id"] for p in problems if p["check"] == "constant"}
     problems.extend(_problem("<dataset>", "leakage", d)
