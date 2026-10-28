@@ -4,6 +4,7 @@ import csv
 import io
 import json
 import platform
+from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -63,11 +64,26 @@ def doctor():
     import torch
     from .model import ModelConfig, build_virgin
     model = build_virgin(ModelConfig())
+    config = model.config
+    architecture = []
+    channels = config.input_channels
+    for index, width in enumerate(config.widths, 1):
+        architecture.append({"name": f"Conv1d {index}", "input_channels": channels,
+                             "output_channels": width, "kernel_size": config.kernel_size,
+                             "activation": "GELU"})
+        channels = width
     return {"python": platform.python_version(), "torch": torch.__version__,
             "cuda_available": torch.cuda.is_available(), "cuda": torch.version.cuda,
             "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
             "parameters": sum(p.numel() for p in model.parameters()),
-            "status": "untrained", "training_steps": 0}
+            "status": "untrained", "training_steps": 0,
+            "config": asdict(config), "architecture": architecture,
+            "weight_bytes": sum(p.numel() * p.element_size() for p in model.parameters()),
+            "receptive_field_samples": 1 + len(config.widths) * (config.kernel_size - 1),
+            "platform": platform.platform(),
+            "model_source": "fresh_default_initialization",
+            "gpu_memory_bytes": (torch.cuda.get_device_properties(0).total_memory
+                                 if torch.cuda.is_available() else None)}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -87,6 +103,9 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, doctor())
             return
         files = {"/": ("index.html", "text/html; charset=utf-8"),
+                 "/model": ("model.html", "text/html; charset=utf-8"),
+                 "/model/": ("model.html", "text/html; charset=utf-8"),
+                 "/model.js": ("model.js", "text/javascript; charset=utf-8"),
                  "/app.js": ("app.js", "text/javascript; charset=utf-8"),
                  "/style.css": ("style.css", "text/css; charset=utf-8")}
         if self.path not in files:

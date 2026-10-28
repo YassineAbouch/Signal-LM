@@ -47,6 +47,27 @@ def test_http_routes_errors_and_origin():
         response = client.getresponse()
         assert response.status == 200
         assert b"Signal-LM" in response.read()
+        client.request("GET", "/model")
+        response = client.getresponse()
+        assert response.status == 200
+        assert "Architecture du réseau" in response.read().decode()
+        client.request("GET", "/model.js")
+        response = client.getresponse()
+        assert response.status == 200
+        assert response.getheader("Content-Type").startswith("text/javascript")
+        response.read()
+        client.request("GET", "/api/doctor")
+        response = client.getresponse()
+        assert response.status == 200
+        details = json.loads(response.read())
+        assert details["status"] == "untrained"
+        assert details["training_steps"] == 0
+        assert details["parameters"] == 22304
+        assert details["config"]["widths"] == [16, 32, 64]
+        assert details["weight_bytes"] == 89216
+        assert details["receptive_field_samples"] == 19
+        assert len(details["architecture"]) == 3
+        assert details["model_source"] == "fresh_default_initialization"
         client.request("POST", "/api/analyze", json.dumps({"frequency": 120}),
                        {"Content-Type": "application/json"})
         response = client.getresponse()

@@ -58,3 +58,14 @@ métier, aucune donnée réelle, mesure de latence ou précision industrielle.
   interaction navigateur ; parsing CSV et endpoint couverts par les tests.
 - Mise en page adaptative prévue ; rendu mobile non vérifié dans cette session.
 - Aucun hébergement Internet, contrôle d'accès multi-utilisateur ou entraînement.
+
+### Correction de la navigation Modèle
+
+- Page `/model` dédiée et lien de navigation actif ; ancien lien `/#model`
+  redirigé vers cette page.
+- Architecture, configuration, paramètres, taille des poids et matériel issus
+  du diagnostic du serveur, avec actualisation et message d'erreur explicite.
+- Les tests HTTP vérifient la page, son JavaScript et les métadonnées du modèle
+  par défaut ; suite complète : 30 tests réussis en 5,95 s.
+- Navigateur : ancienne URL, affichage des données CUDA, bouton d'actualisation
+  et retour à l'analyse vérifiés. Aucun checkpoint modifié ou entraînement lancé.

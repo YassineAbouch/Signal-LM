@@ -87,6 +87,9 @@ Le port peut être choisi avec `--port 8766`.
 L'interface propose une sinusoïde configurable, l'import CSV avec sélection
 explicite des colonnes et unités, le choix du canal, les courbes temporelle/FFT,
 les mesures physiques, l'export JSON et le diagnostic PyTorch/CUDA.
+La page `/model` présente l'architecture et la configuration du modèle par
+défaut, la taille des poids et l'environnement CPU/CUDA. Le diagnostic peut
+être actualisé ; il inspecte une instance fraîche sans charger de checkpoint.
 Les valeurs CSV sont traitées en mémoire par le serveur local, sans sauvegarde
 automatique. L'export JSON est un téléchargement volontaire contenant les mesures
 et les valeurs affichées ; il est à conserver hors Git pour des données réelles.

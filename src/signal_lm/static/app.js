@@ -1,3 +1,4 @@
+if (location.hash === '#model') location.replace('/model');
 const $ = id => document.getElementById(id);
 let source = 'demo', result = null;
 function mode(value) {
