@@ -88,6 +88,18 @@ def test_http_routes_errors_and_origin():
         assert response.status == 200
         assert response.getheader("Content-Type").startswith("text/javascript")
         response.read()
+        client.request("GET", "/audio")
+        response = client.getresponse()
+        assert response.status == 200
+        assert "Démarrer la capture" in response.read().decode()
+        client.request("POST", "/api/audio/start", "{}", {"Origin": "https://example.com"})
+        response = client.getresponse()
+        assert response.status == 403
+        response.read()
+        client.request("POST", "/api/audio/devices", "{}", {"Host": "foreign.example"})
+        response = client.getresponse()
+        assert response.status == 403
+        response.read()
         client.request("GET", "/api/doctor")
         response = client.getresponse()
         assert response.status == 200

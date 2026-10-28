@@ -75,6 +75,11 @@ le choix d'un paquet compatible pour un autre matériel.
 
 ## Interface web locale
 
+Pour le **son du PC en temps réel**, ouvrir `/audio` après installation de
+l'extension `audio`. Choix de la sortie Windows et de la zone, démarrage/arrêt
+explicites, horodatage UTC et affichage temporel/FFT sans enregistrement automatique :
+voir [docs/AUDIO_LIVE.md](docs/AUDIO_LIVE.md).
+
 Depuis `E:\Signal-LM`, lancer :
 
 ```powershell

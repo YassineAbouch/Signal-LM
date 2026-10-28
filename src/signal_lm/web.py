@@ -12,6 +12,7 @@ import numpy as np
 
 from .analysis import analyze
 from .signal import Signal
+from .audio import capture, devices as audio_devices
 
 STATIC = Path(__file__).with_name("static")
 MAX_BODY = 2 * 1024 * 1024
@@ -105,6 +106,13 @@ def doctor():
 
 
 class Handler(BaseHTTPRequestHandler):
+    def local_host(self):
+        allowed = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
+        if self.headers.get("Host") not in allowed:
+            self.respond(403, {"error": "Hôte local requis."})
+            return False
+        return True
+
     def respond(self, status, content, mime="application/json; charset=utf-8"):
         raw = content if isinstance(content, bytes) else json.dumps(content, allow_nan=False).encode()
         self.send_response(status)
@@ -117,10 +125,15 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self):
+        if not self.local_host():
+            return
         if self.path == "/api/doctor":
             self.respond(200, doctor())
             return
         files = {"/": ("index.html", "text/html; charset=utf-8"),
+                 "/audio": ("audio.html", "text/html; charset=utf-8"),
+                 "/audio.js": ("audio.js", "text/javascript; charset=utf-8"),
+                 "/charts.js": ("charts.js", "text/javascript; charset=utf-8"),
                  "/model": ("model.html", "text/html; charset=utf-8"),
                  "/model/": ("model.html", "text/html; charset=utf-8"),
                  "/model.js": ("model.js", "text/javascript; charset=utf-8"),
@@ -133,7 +146,9 @@ class Handler(BaseHTTPRequestHandler):
         self.respond(200, (STATIC / name).read_bytes(), mime)
 
     def do_POST(self):
-        if self.path != "/api/analyze":
+        if not self.local_host():
+            return
+        if self.path not in {"/api/analyze", "/api/audio/devices", "/api/audio/start", "/api/audio/frame", "/api/audio/stop"}:
             self.respond(404, {"error": "Ressource introuvable."})
             return
         # Reject cross-origin requests to this local service.
@@ -149,9 +164,21 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict):
                 raise ValueError("Objet JSON attendu.")
-            self.respond(200, analyze_request(data))
+            if self.path == "/api/audio/devices":
+                result = {"devices": audio_devices()}
+            elif self.path == "/api/audio/start":
+                result = capture.start(data["device_id"], data["zone"])
+            elif self.path == "/api/audio/frame":
+                result = capture.frame(data["session"])
+            elif self.path == "/api/audio/stop":
+                result = capture.stop(data.get("session"))
+            else:
+                result = analyze_request(data)
+            self.respond(200, result)
         except (ValueError, TypeError, KeyError, OverflowError, csv.Error) as exc:
             self.respond(400, {"error": str(exc)})
+        except (RuntimeError, OSError, LookupError) as exc:
+            self.respond(503, {"error": str(exc)})
 
 
 def main():
@@ -165,6 +192,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        capture.close()
         server.server_close()
 
 

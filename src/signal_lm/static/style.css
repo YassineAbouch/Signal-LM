@@ -27,3 +27,6 @@
 .add-component{width:100%;font-size:12px;white-space:normal;color:var(--blue)}#component-count{font-size:10px;margin-top:10px}
 .component-toggle{display:flex;align-items:center;gap:9px;margin:12px 0 0;font-weight:400;color:var(--muted);font-size:12px;min-height:44px;cursor:pointer}.component-toggle input{width:18px;height:18px;min-height:18px;accent-color:var(--blue)}
 .chart-foot{gap:16px}.chart-foot>span:first-child{max-width:80%}
+
+.stop-audio{margin-top:10px;width:100%;border-color:#d8acaa;color:#a3271b}.audio-error{color:#a3271b;font-size:12px;overflow-wrap:anywhere}.audio-helper{margin-top:20px}.audio-notice{padding:22px 26px;margin:4px 0 25px}.audio-notice strong{font-size:14px}.audio-notice p{font-size:12px}.controls #device{width:100%;margin-bottom:12px}.results #audio-frequency,.results #audio-rms,.results #audio-peak{font-size:23px}
+@media(max-width:700px){.rail{gap:6px}.rail .nav{display:flex;margin:0;padding:8px}.rail .brand{margin-right:auto}.audio-notice{padding:20px}.results #audio-frequency,.results #audio-rms,.results #audio-peak{font-size:17px}}
